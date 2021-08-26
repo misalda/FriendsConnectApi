@@ -1,0 +1,480 @@
+openapi: 3.0.0
+info:
+  description: Backend API for 
+  version: "1.0.0"
+  title: App API
+
+paths:
+  /login:
+    post:
+      summary: friendsconnect staff login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCredentials"
+      responses:
+        "200":
+          description: login success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Acces Denied,wrong credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /guest:
+    post:
+      summary: create/check in  guest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Guest"
+      responses:
+        "200":
+          description: check in confirmation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestConfirmation"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /guest/prefill:
+    post:
+      summary: prefill guest info using barcode data
+      parameters:
+        - in: header
+          name: session
+          schema:
+            $ref: "#/components/schemas/Session"
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BarcodeData"
+      responses:
+        "200":
+          description: Prefilled Guest Information.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrefilledGuest"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Acces Denied,wrong credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /lounge:
+    get:
+      summary: get lounge info
+      responses:
+        "200":
+          description: lounge count.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lounge"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /lounge/{loungeCode}:
+    get:
+      summary: get lounge info
+      parameters:
+        - in: path
+          name: loungeCode # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: lounge count.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lounge"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /guestCount/{loungeCode}:
+    get:
+      summary: get lounge info and guest count
+      parameters:
+        - in: path
+          name: loungeCode # Note the name is the same as in the path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: lounge count.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoungeDetail"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+components:
+  schemas:
+    Guest:
+      type: object
+      required:
+        - loungeCode
+        - salutation
+        - firstName
+        - lastName
+        - email
+        - phone
+        - estimatedExitTime
+      properties:
+        loungeCode:
+          type: string
+          format: uuid
+          description: unique identifier of the lounge
+        loungeName:
+          type: string
+          description: Lounge Name
+        salutation:
+          type: string
+          description: guest salutation e.g Mr,Mrs,Captain etc.
+        firstName:
+          type: string
+          description: First Name.
+        lastName:
+          type: string
+          description: Last Name
+        email:
+          type: string
+          format: email
+          description: email address
+        phone:
+          type: string
+          description: telephone number
+        estimatedExitTime:
+          type: string
+          format: date-time
+          description: estimated exit time
+        dependents:
+          type: array
+          description: guest dependents
+          items:
+            $ref: "#/components/schemas/Dependent"
+    PrefilledGuest:
+      type: object
+      properties:
+        salutation:
+          type: string
+          description: guest salutation e.g Mr,Mrs,Captain etc.
+        firstName:
+          type: string
+          description: First Name.
+        lastName:
+          type: string
+          description: Last Name
+        email:
+          type: string
+          format: email
+          description: email address
+        phone:
+          type: string
+          description: telephone number
+        estimatedExitTime:
+            $ref: "#/components/schemas/FlightTime"
+    Dependent:
+      type: object
+      required:
+        - salutation
+        - firstName
+        - lastName
+        - email
+        - phone
+      properties:
+        salutation:
+          type: string
+          description: guest salutation e.g Mr,Mrs,Captain etc.
+        firstName:
+          type: string
+          description: First Name.
+        lastName:
+          type: string
+          description: Last Name
+        email:
+          type: string
+          format: email
+          description: email address
+        phone:
+          type: string
+          description: telephone number
+    BarcodeData:
+      type: object
+      required:
+        - pnr
+      properties:
+        salutation:
+          type: string
+          description: salutation
+        firstName:
+          type: string
+          description: first name
+        lastname:
+          type: string
+          description: last name with salutation
+        pnr:
+          type: string
+          description: PNR number
+        flight:
+          type: string
+          description: flight number
+        departurePort:
+          type: string
+          description: Departure Airport Code
+        arrivalPort:
+          type: string
+          description: Arrival Airport Code
+    GuestConfirmation:
+      type: object
+      properties:
+        loungeCode:
+          type: string
+          format: uuid
+          description: lounge unique identifier
+        loungeName:
+          type: string
+          description: guest salutation e.g Mr,Mrs,Captain etc.
+        checkInDateTime:
+          type: string
+          format: date-time
+          description: First Name.
+        guestFullName:
+          type: string
+          description: Last Name
+        guestDependents:
+          type: array
+          description: email address
+          items:
+            type: string
+        estimatedExitDateTime:
+          type: string
+          format: date-time
+          description: exit time from lounge
+    Lounge:
+      type: object
+      properties:
+        loungeCode:
+          type: string
+          format: uuid
+          description: lounge unique identifier
+        loungeName:
+          type: string
+          description: guest salutation e.g Mr,Mrs,Captain etc.
+    LoungeDetail:
+      type: object
+      properties:
+        loungeCode:
+          type: string
+          format: uuid
+          description: lounge unique identifier
+        guestCount:
+          type: integer
+          description: guest count.
+    UserCredentials:
+      type: object
+      properties:
+        user:
+          type: string
+          description: username
+        password:
+          type: string
+          description: password
+        office:
+          type: string
+          description: office location id
+    Session:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: username
+        sequenceumber:
+          type: integer
+          description: request sequence number
+        securityToken:
+          type: string
+          description: office location id
+    FlightTime:
+      type: object
+      description: flight time time zone time zone is not provided by amadeus
+      properties:
+        year:
+          type: integer
+          description: year
+        month:
+          type: integer
+          description: month
+        day:
+          type: integer
+          description: day
+        hour:
+          type: integer
+          description: hour
+        minutes:
+          type: integer
+          description: minute
+        seconds:
+          type: integer
+          description: minute
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: error message

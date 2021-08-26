@@ -1,0 +1,157 @@
+# cSpell: disable
+service:
+  name: friends-connect-app
+  publish: false # Do not publish updates to serverless.com, it's none of their business
+package:
+  exclude:
+    - samples/**
+custom:
+  stages:
+    - dev
+    - prod
+  apiCallLogging:
+    dev: true
+    prod: false
+  pnrCrypticWSDL:
+    dev: "./soap/dev/1ASIWKAGQF_PDT_20190613_072223.wsdl"
+    prod: "./soap/prod/1ASIWKAGQF_PRD_20190808_030229.wsdl"
+  auroraClusterArn:
+     Fn::Join:
+       - ""
+       - - "arn:aws:rds:${opt:region, self:provider.region}:"
+         - Ref: "AWS::AccountId"
+         - ":cluster:"
+         - Ref: "ServerlessRDSCluster"
+  auroraClusterSecretArn: !Ref "RDSInstanceSecret"
+  output:
+    file: ./.serverless/stackOutput.yml
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-southeast-2
+  timeout: 60
+  stage: ${opt:stage,'dev'}
+  logs:
+    restApi: true
+  environment:
+    DYNAMODB_TABLE: ${self:service.name}-ddb-loungeGuests-${opt:stage, self:provider.stage}
+    RDS_DB: "qladb"
+    RDS_USER: "qladbuser"
+    AURORA_CLUSTER_ARN: "${self:custom.auroraClusterArn}"
+    AURORA_CLUSTER_SECRET_ARN: ${self:custom.auroraClusterSecretArn}
+  iamRoleStatements:
+    - Effect: Allow
+      Action: # These are required to work with a VPC
+        - ec2:CreateNetworkInterface
+        - ec2:DescribeNetworkInterfaces
+        - ec2:DeleteNetworkInterface
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - rds-data:*
+      Resource: ${self:custom.auroraClusterArn}
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: ${self:custom.auroraClusterSecretArn}
+functions:
+  apiHandler:
+    handler: index.handler
+    environment:
+      API_CALL_LOGGING: ${self:custom.apiCallLogging.${self:provider.stage}}
+      PNR_CRYPTIC_WSDL: ${self:custom.pnrCrypticWSDL.${self:provider.stage}}
+      APP_ENV: ${self:provider.stage}
+resources:
+  Resources:
+    ApiGatewayRestApi:
+      Type: "AWS::ApiGateway::RestApi"
+      Properties:
+        Name: ${self:service.name}-${self:provider.stage}-api
+        Body: ${file(./apiDefiniton.yml)}
+    ApiGatewayDeployment:
+      Type: AWS::ApiGateway::Deployment
+      Properties:
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        StageName: ${self:provider.stage}
+    Permission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName:
+          Fn::GetAtt:
+            - ApiHandlerLambdaFunction
+            - Arn
+        Action: lambda:InvokeFunction
+        Principal: apigateway.amazonaws.com
+        SourceArn:
+          Fn::Join:
+            - ""
+            - - "arn:aws:execute-api:"
+              - !Ref AWS::Region
+              - ":"
+              - !Ref AWS::AccountId
+              - ":"
+              - !Ref ApiGatewayRestApi
+              - "/*/*/*"
+    RDSInstanceSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: ${self:service.name}-${self:provider.stage}-rdsInstanceSecret
+        Description: "This is my rds instance secret"
+        GenerateSecretString:
+          SecretStringTemplate: '{"username": "${self:provider.environment.RDS_USER}"}'
+          GenerateStringKey: "password"
+          PasswordLength: 16
+          ExcludeCharacters: '"@/\'
+    ServerlessRDSCluster:
+      Type: AWS::RDS::DBCluster
+      Properties:
+        Engine: aurora-postgresql
+        EngineMode: serverless
+        EnableHttpEndpoint: true
+        DatabaseName: ${self:provider.environment.RDS_DB}
+        MasterUsername: !Sub "{{resolve:secretsmanager:${RDSInstanceSecret}::username}}"
+        MasterUserPassword: !Sub "{{resolve:secretsmanager:${RDSInstanceSecret}::password}}"
+        Tags:
+          - Key: Name
+            Value: ${self:provider.environment.RDS_DB}
+  Outputs:
+    RDSClusterId:
+      Value:
+        Ref: ServerlessRDSCluster
+      Export:
+        Name: "${self:service.name}-${self:provider.stage}-RDSClusterId"
+    RDSInstanceSecret:
+      Value:
+        Ref: RDSInstanceSecret
+      Export:
+        Name: "${self:service.name}-${self:provider.stage}-RDSClusterSecret"
+    RDSClusterArn:
+      Value: ${self:custom.auroraClusterArn}
+      Export:
+        Name: "${self:service.name}-${self:provider.stage}-RDSClusterArn"
+    APIEndpoint:
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: "ApiGatewayRestApi"
+            - ".execute-api."
+            - ${self:provider.region}.
+            - Ref: "AWS::URLSuffix"
+            - "/"
+            - ${self:provider.stage}
+      Export:
+        Name: "${self:service.name}-${self:provider.stage}-apiEndpoint"
+plugins:
+  - serverless-stage-manager
+  - serverless-stack-output
