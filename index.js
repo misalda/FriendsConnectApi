@@ -3,6 +3,7 @@ const express = require("express");
 var userService = require("./services/userService");
 var loungeService = require("./services/userProfileService");
 var guestService = require("./services/guestService");
+var userProfileService = require(".services/userProfileService")
 const {
   loginValidationRules,
   guestValidationRules,
@@ -14,7 +15,7 @@ const {
 var app = express();
 app.use(express.json());
 app.post("/userProfile"/*, guestValidationRules(), validate,*/, async (req, res) => {
-  const response = await guestService.createGuest(req.body);
+  const response = await userProfile.createUserProfile(req.body);
   if (response.error) {
     res
       .status(response.code != null ? response.code : 500)
@@ -26,7 +27,7 @@ app.post("/userProfile"/*, guestValidationRules(), validate,*/, async (req, res)
 app.get(
   "/userProfile/:profileId?",
   async (req, res) => {
-    const response = await loungeService.getLounges(req.params.loungeCode);
+    const response = await loungeService.getUserProfile(req.params.loungeCode);
     if (response.error) {
       res
         .status(response.code != null ? response.code : 500)
