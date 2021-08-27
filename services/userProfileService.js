@@ -4,9 +4,9 @@ const rdsRepo = require("../modules/rdsRepository").rdsRepository(
   process.env.AURORA_CLUSTER_ARN,
   process.env.RDS_DB
 );
-const sqlStatements = require("../sql/statements");
+const sqlStatements = require("../database/statements");
 
-async function getLounges(loungeCode) {
+async function getProfile(profileId) {
   try {
     var params = null;
     var statement = sqlStatements.getLounges;
@@ -36,4 +36,8 @@ async function getLounges(loungeCode) {
     return { error: { message: e.name + ": " + e.message } };
   }
 }
-module.exports.getLounges = getLounges;
+async function createProfile(newProfile){
+
+}
+module.exports.getProfile = getProfile;
+module.exports.createProfile = createProfile;
