@@ -1,21 +1,29 @@
 const serverless = require("serverless-http");
 const express = require("express");
-var userService = require("./services/userService");
 var loungeService = require("./services/userProfileService");
-var guestService = require("./services/guestService");
-var userProfileService = require(".services/userProfileService")
-const {
-  loginValidationRules,
-  guestValidationRules,
-  guestCountValidationRules,
-  getLoungeValidaionRules,
-  prefillValidationRules,
-  validate
-} = require("./utils/validators");
+var userProfile = require("./services/userProfileService");
+// const {
+//   loginValidationRules,
+//   guestValidationRules,
+//   guestCountValidationRules,
+//   getLoungeValidaionRules,
+//   prefillValidationRules,
+//   validate
+// } = require("./utils/validators");
 var app = express();
 app.use(express.json());
 app.post("/userProfile"/*, guestValidationRules(), validate,*/, async (req, res) => {
   const response = await userProfile.createUserProfile(req.body);
+  if (response.error) {
+    res
+      .status(response.code != null ? response.code : 500)
+      .json(response.error);
+    return;
+  }
+  res.status(200).json(response);
+});
+app.post("/friendsRequest"/*, guestValidationRules(), validate,*/, async (req, res) => {
+  const response = await userProfile.createFriendRequest(req.body);
   if (response.error) {
     res
       .status(response.code != null ? response.code : 500)

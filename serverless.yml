@@ -21,7 +21,7 @@ custom:
          - Ref: "ServerlessRDSCluster"
   auroraClusterSecretArn: !Ref "RDSInstanceSecret"
   output:
-    file: ./.serverless/stackOutput.yml
+    file: ./.serverless/stackOutput.json
 provider:
   name: aws
   runtime: nodejs12.x
@@ -66,38 +66,48 @@ functions:
     environment:
       API_CALL_LOGGING: ${self:custom.apiCallLogging.${self:provider.stage}}
       APP_ENV: ${self:provider.stage}
+    events:
+      - http:
+          path: userProfile
+          method: get
+          cors: true
+      - http:
+          path: userProfile
+          method: post
+          cors: true
+    
 resources:
   Resources:
-    ApiGatewayRestApi:
-      Type: "AWS::ApiGateway::RestApi"
-      Properties:
-        Name: ${self:service.name}-${self:provider.stage}-api
-        Body: ${file(./apiDefiniton.yml)}
-    ApiGatewayDeployment:
-      Type: AWS::ApiGateway::Deployment
-      Properties:
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        StageName: ${self:provider.stage}
-    Permission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        FunctionName:
-          Fn::GetAtt:
-            - ApiHandlerLambdaFunction
-            - Arn
-        Action: lambda:InvokeFunction
-        Principal: apigateway.amazonaws.com
-        SourceArn:
-          Fn::Join:
-            - ""
-            - - "arn:aws:execute-api:"
-              - !Ref AWS::Region
-              - ":"
-              - !Ref AWS::AccountId
-              - ":"
-              - !Ref ApiGatewayRestApi
-              - "/*/*/*"
+    # ApiGatewayRestApi:
+    #   Type: "AWS::ApiGateway::RestApi"
+    #   Properties:
+    #     Name: ${self:service.name}-${self:provider.stage}-api
+    #     Body: ${file(./apiDefiniton.yml)}
+    # ApiGatewayDeployment:
+    #   Type: AWS::ApiGateway::Deployment
+    #   Properties:
+    #     RestApiId:
+    #       Ref: ApiGatewayRestApi
+    #     StageName: ${self:provider.stage}
+    # Permission:
+      # Type: AWS::Lambda::Permission
+      # Properties:
+      #   FunctionName:
+      #     Fn::GetAtt:
+      #       - ApiHandlerLambdaFunction
+      #       - Arn
+      #   Action: lambda:InvokeFunction
+      #   Principal: apigateway.amazonaws.com
+      #   SourceArn:
+      #     Fn::Join:
+      #       - ""
+      #       - - "arn:aws:execute-api:"
+      #         - !Ref AWS::Region
+      #         - ":"
+      #         - !Ref AWS::AccountId
+      #         - ":"
+      #         - !Ref ApiGatewayRestApi
+      #         - "/*/*/*"
     RDSInstanceSecret:
       Type: AWS::SecretsManager::Secret
       Properties:

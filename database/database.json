@@ -4,7 +4,7 @@
       "driver": {
         "require": "db-migrate-pg-aurora"
       },
-      "database": "qladb",
+      "database": "fcdb",
       "secretArn": {"ENV": "AURORA_CLUSTER_SECRET_ARN"},
       "resourceArn": {"ENV": "AURORA_CLUSTER_ARN"},
       "region": {"ENV": "REGION"},

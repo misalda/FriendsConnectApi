@@ -1,3 +1,6 @@
 /* Replace with your SQL commands */
-DROP TABLE lounge_guests
-DROP TABLE airport_lounges
+DROP TABLE friendsEvent
+DROP TABLE friendsEventGuests
+DROP TABLE friendRequest
+DROP TABLE userAvailability
+DROP TABLE userProfile
