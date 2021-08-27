@@ -1,6 +1,5 @@
 const serverless = require("serverless-http");
 const express = require("express");
-var loungeService = require("./services/userProfileService");
 var userProfile = require("./services/userProfileService");
 // const {
 //   loginValidationRules,
@@ -13,7 +12,7 @@ var userProfile = require("./services/userProfileService");
 var app = express();
 app.use(express.json());
 app.post("/userProfile"/*, guestValidationRules(), validate,*/, async (req, res) => {
-  const response = await userProfile.createUserProfile(req.body);
+  const response = await userProfile.createProfile(req.body);
   if (response.error) {
     res
       .status(response.code != null ? response.code : 500)
@@ -35,7 +34,7 @@ app.post("/friendsRequest"/*, guestValidationRules(), validate,*/, async (req, r
 app.get(
   "/userProfile/:profileId?",
   async (req, res) => {
-    const response = await loungeService.getUserProfile(req.params.loungeCode);
+    const response = await userProfile.getProfile(req.params.loungeCode);
     if (response.error) {
       res
         .status(response.code != null ? response.code : 500)

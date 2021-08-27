@@ -1,11 +1,11 @@
 module.exports.getUserProfile =
-  "SELECT * FROM userProfiles";
+  "SELECT id,firstName,lastName,email,phone,maxContactsPerMeeting FROM userProfile";
 module.exports.getUserProfileById =
-  "SELECT * FROM userProfiles WHERE id = :id ";
+  "SELECT id,firstName,lastName,email,phone,maxContactsPerMeeting FROM userProfile WHERE id = :id ";
 module.exports.createUserProfile =
-  `INSERT INTO userProfile(firstName,lastName,email,phone,maxContactsPerMeeting;
-  VALUES (:firstName,:lastName,:email,:phone,:maxContactsPerMeeting);
-  RETURNING id,`;
+  `INSERT INTO userProfile(firstName,lastName,email,phone,maxContactsPerMeeting)
+  VALUES (:firstName,:lastName,:email,:phone,:maxContactsPerMeeting)
+  RETURNING id`;
 module.exports.getGuestCountByLounge =
   "SELECT lounge_code,COUNT(*) as guest_count FROM lounge_guests WHERE lounge_code = :lounge_code AND estimated_exit_time_utc > now() at time zone 'utc' group by lounge_code";
 module.exports.createLounge = `INSERT INTO public.airport_lounges(name, airport_code, lounge_code) 

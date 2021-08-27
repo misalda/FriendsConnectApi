@@ -15,22 +15,22 @@ async function getProfile(profileId) {
         {
           name: "id",
           typeHint: "int",
-          value: { stringValue: profileId }
+          value: { longValue: profileId }
         }
       ];
-      statement = sqlStatements.getLoungeById;
+      statement = sqlStatements.getUserProfileById;
     }
     var result = await rdsRepo.executeStatement(statement, params);
     var profiles = [];
-    if (profiles.records) {
+    if (result.records) {
       result.records.forEach(element => {
         profiles.push({
-          id: element[0].stringValue,
+          id: element[0].longValue,
           firstname: element[1].stringValue,
           lastName: element[2].stringValue,
           email: element[3].stringValue,
           phone: element[4].stringValue,
-          maxContactsPerMeeting: element[5].stringValue,
+          maxContactsPerMeeting: element[5].longValue,
         });
       });
     }
@@ -48,7 +48,7 @@ function setupParameters(userProfileModel) {
     { name: "lastName", value: { stringValue: userProfileModel.lastName } },
     { name: "phone", value: { stringValue: userProfileModel.phone } },
     { name: "email", value: { stringValue: userProfileModel.email } },
-    { name: "maxContactsPerMeeting", value: { integerValue: userProfileModel.maxContactsPerMeeting } }
+    { name: "maxContactsPerMeeting", value: { longValue: userProfileModel.maxContactsPerMeeting } }
   ]);
   return parameters;
 }
@@ -110,4 +110,4 @@ async function createFriendRequest(newRequest) {
 
 module.exports.getProfile = getProfile;
 module.exports.createProfile = createProfile;
-module.exports.friendRequest = friendRequest;
+module.exports.friendRequest = createFriendRequest;

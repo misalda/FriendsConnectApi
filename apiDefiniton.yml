@@ -3,158 +3,61 @@ info:
   description: Backend API for 
   version: "1.0.0"
   title: App API
-
 paths:
-  /login:
+  /friendRequest:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      tags:
+      - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
     post:
-      summary: friendsconnect staff login
+      summary: get profiles info
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserCredentials"
+              $ref: "#/components/schemas/FriendRequest"
       responses:
         "200":
-          description: login success.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Session"
-        "500":
-          description: server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "400":
-          description: bad request, missing mandatory fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: Acces Denied,wrong credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      x-amazon-apigateway-integration: #amazon api gateway integration
-        uri:
-          Fn::Join:
-            - ""
-            - - "arn:aws:apigateway:"
-              - Ref: AWS::Region
-              - ":lambda:path/2015-03-31/functions/"
-              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
-              - "/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
-  /guest:
-    post:
-      summary: create/check in  guest
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Guest"
-      responses:
-        "200":
-          description: check in confirmation.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GuestConfirmation"
-        "500":
-          description: server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "400":
-          description: bad request, missing mandatory fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      x-amazon-apigateway-integration: #amazon api gateway integration
-        uri:
-          Fn::Join:
-            - ""
-            - - "arn:aws:apigateway:"
-              - Ref: AWS::Region
-              - ":lambda:path/2015-03-31/functions/"
-              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
-              - "/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
-  /guest/prefill:
-    post:
-      summary: prefill guest info using barcode data
-      parameters:
-        - in: header
-          name: session
-          schema:
-            $ref: "#/components/schemas/Session"
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BarcodeData"
-      responses:
-        "200":
-          description: Prefilled Guest Information.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PrefilledGuest"
-        "500":
-          description: server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "400":
-          description: bad request, missing mandatory fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: Acces Denied,wrong credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      x-amazon-apigateway-integration: #amazon api gateway integration
-        uri:
-          Fn::Join:
-            - ""
-            - - "arn:aws:apigateway:"
-              - Ref: AWS::Region
-              - ":lambda:path/2015-03-31/functions/"
-              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
-              - "/invocations"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        type: "aws_proxy"
-  /lounge:
-    get:
-      summary: get lounge info
-      responses:
-        "200":
-          description: lounge count.
+          description: profiles.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Lounge"
+                  $ref: "#/components/schemas/UserProfile"
         "500":
           description: server error
           content:
@@ -179,25 +82,25 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         type: "aws_proxy"
-  /lounge/{loungeCode}:
+  /friendRequest/{profileId}:
     get:
-      summary: get lounge info
+      summary: get profiles info
       parameters:
         - in: path
-          name: loungeCode # Note the name is the same as in the path
+          name: profileId # Note the name is the same as in the path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       responses:
         "200":
-          description: lounge count.
+          description: profiles.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Lounge"
+                  $ref: "#/components/schemas/FriendRequest"
         "500":
           description: server error
           content:
@@ -222,23 +125,221 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         type: "aws_proxy"
-  /guestCount/{loungeCode}:
+  /userProfile:
+    options:
+      summary: CORS support
+      description: Enable CORS by returning correct headers
+      tags:
+      - CORS
+      responses:
+        200:
+          description: Default response for CORS method
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Access-Control-Allow-Methods:
+              schema:
+                type: string
+            Access-Control-Allow-Headers:
+              schema:
+                type: string
+          content: {}
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode" : 200
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+              method.response.header.Access-Control-Allow-Methods: '''*'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: |
+                {}
     get:
-      summary: get lounge info and guest count
-      parameters:
-        - in: path
-          name: loungeCode # Note the name is the same as in the path
-          required: true
-          schema:
-            type: string
-            format: uuid
+      summary: get profiles info
       responses:
         "200":
-          description: lounge count.
+          description: profiles.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoungeDetail"
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+    post:
+      summary: get profiles info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfile"
+      responses:
+        "200":
+          description: profiles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /userProfile/{profileId}:
+    get:
+      summary: Get User Profile
+      parameters:
+        - in: path
+          name: profileId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: User Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /userProfile/{profileId}/friends:
+    get:
+      summary: Get Friends From
+      parameters:
+        - in: path
+          name: profileId # Note the name is the same as in the path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: User Profile
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+        "500":
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: bad request, missing mandatory fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      x-amazon-apigateway-integration: #amazon api gateway integration
+        uri:
+          Fn::Join:
+            - ""
+            - - "arn:aws:apigateway:"
+              - Ref: AWS::Region
+              - ":lambda:path/2015-03-31/functions/"
+              - Fn::GetAtt: ["ApiHandlerLambdaFunction", "Arn"]
+              - "/invocations"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /friendsEvent:
+    post: 
+      summary: get profiles info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FriendsEvent"
+      responses:
+        "200":
+          description: profiles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FriendsEvent"
         "500":
           description: server error
           content:
@@ -265,27 +366,40 @@ paths:
         type: "aws_proxy"
 components:
   schemas:
-    Guest:
+    FriendRequest:
       type: object
       required:
-        - loungeCode
-        - salutation
+        - fromUserProfileId
+        - toUserProfileId
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: id
+        fromUserProfileId:
+          type: integer
+          format: int64
+          description: id
+        toUserProfileId:
+          type: integer
+          format: int64
+          description: id
+        requestStatus:
+          type: integer
+          format: int32
+          description: id
+    UserProfile:
+      type: object
+      required:
         - firstName
         - lastName
         - email
-        - phone
-        - estimatedExitTime
+        - maxContactsPerMeeting
       properties:
-        loungeCode:
-          type: string
-          format: uuid
-          description: unique identifier of the lounge
-        loungeName:
-          type: string
-          description: Lounge Name
-        salutation:
-          type: string
-          description: guest salutation e.g Mr,Mrs,Captain etc.
+        id:
+          type: integer
+          format: int64
+          description: id
         firstName:
           type: string
           description: First Name.
@@ -299,179 +413,28 @@ components:
         phone:
           type: string
           description: telephone number
-        estimatedExitTime:
+        maxContactsPerMeeting:
+          type: integer
+          format: int32
+          description: max buddies to meet at once
+    FriendsEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: id
+        startDateTime:
           type: string
-          format: date-time
-          description: estimated exit time
-        dependents:
+          format: date
+        endDateTime:
+          type: string
+          format: date
+        friendsEventGuests:
           type: array
-          description: guest dependents
           items:
-            $ref: "#/components/schemas/Dependent"
-    PrefilledGuest:
-      type: object
-      properties:
-        salutation:
-          type: string
-          description: guest salutation e.g Mr,Mrs,Captain etc.
-        firstName:
-          type: string
-          description: First Name.
-        lastName:
-          type: string
-          description: Last Name
-        email:
-          type: string
-          format: email
-          description: email address
-        phone:
-          type: string
-          description: telephone number
-        estimatedExitTime:
-            $ref: "#/components/schemas/FlightTime"
-    Dependent:
-      type: object
-      required:
-        - salutation
-        - firstName
-        - lastName
-        - email
-        - phone
-      properties:
-        salutation:
-          type: string
-          description: guest salutation e.g Mr,Mrs,Captain etc.
-        firstName:
-          type: string
-          description: First Name.
-        lastName:
-          type: string
-          description: Last Name
-        email:
-          type: string
-          format: email
-          description: email address
-        phone:
-          type: string
-          description: telephone number
-    BarcodeData:
-      type: object
-      required:
-        - pnr
-      properties:
-        salutation:
-          type: string
-          description: salutation
-        firstName:
-          type: string
-          description: first name
-        lastname:
-          type: string
-          description: last name with salutation
-        pnr:
-          type: string
-          description: PNR number
-        flight:
-          type: string
-          description: flight number
-        departurePort:
-          type: string
-          description: Departure Airport Code
-        arrivalPort:
-          type: string
-          description: Arrival Airport Code
-    GuestConfirmation:
-      type: object
-      properties:
-        loungeCode:
-          type: string
-          format: uuid
-          description: lounge unique identifier
-        loungeName:
-          type: string
-          description: guest salutation e.g Mr,Mrs,Captain etc.
-        checkInDateTime:
-          type: string
-          format: date-time
-          description: First Name.
-        guestFullName:
-          type: string
-          description: Last Name
-        guestDependents:
-          type: array
-          description: email address
-          items:
-            type: string
-        estimatedExitDateTime:
-          type: string
-          format: date-time
-          description: exit time from lounge
-    Lounge:
-      type: object
-      properties:
-        loungeCode:
-          type: string
-          format: uuid
-          description: lounge unique identifier
-        loungeName:
-          type: string
-          description: guest salutation e.g Mr,Mrs,Captain etc.
-    LoungeDetail:
-      type: object
-      properties:
-        loungeCode:
-          type: string
-          format: uuid
-          description: lounge unique identifier
-        guestCount:
-          type: integer
-          description: guest count.
-    UserCredentials:
-      type: object
-      properties:
-        user:
-          type: string
-          description: username
-        password:
-          type: string
-          description: password
-        office:
-          type: string
-          description: office location id
-    Session:
-      type: object
-      properties:
-        sessionId:
-          type: string
-          description: username
-        sequenceumber:
-          type: integer
-          description: request sequence number
-        securityToken:
-          type: string
-          description: office location id
-    FlightTime:
-      type: object
-      description: flight time time zone time zone is not provided by amadeus
-      properties:
-        year:
-          type: integer
-          description: year
-        month:
-          type: integer
-          description: month
-        day:
-          type: integer
-          description: day
-        hour:
-          type: integer
-          description: hour
-        minutes:
-          type: integer
-          description: minute
-        seconds:
-          type: integer
-          description: minute
+            type: integer
+            format: int64
     Error:
       type: object
       properties:
