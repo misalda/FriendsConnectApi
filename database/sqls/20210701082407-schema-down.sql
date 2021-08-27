@@ -1,0 +1,2 @@
+DROP TABLE airport_lounges
+DROP TABLE lounge_guests

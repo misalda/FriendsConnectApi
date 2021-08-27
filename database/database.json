@@ -1,0 +1,14 @@
+{
+    "defaultEnv": "qcp",
+    "qcp": {
+      "driver": {
+        "require": "db-migrate-pg-aurora"
+      },
+      "database": "qladb",
+      "secretArn": {"ENV": "AURORA_CLUSTER_SECRET_ARN"},
+      "resourceArn": {"ENV": "AURORA_CLUSTER_ARN"},
+      "region": {"ENV": "REGION"},
+      "maxRetries": 3,
+      "connectTimeout": 45000
+  }
+}

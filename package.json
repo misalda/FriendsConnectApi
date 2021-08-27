@@ -4,28 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "local:login:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-auth-test.json --log --aws-profile qantas",
-    "local:guestCount:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-getGuestCount-test.json --log --aws-profile qantas",
-    "local:getLounge:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-getlounge-test.json --log --aws-profile qantas",
-    "local:getLounges:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-getlounges-test.json --log --aws-profile qantas",
-    "local:registerGuest:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-registerGuest-test.json --log --aws-profile qantas",
-    "local:registerGuestDep:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-registerGuest-dependants-test.json --log --aws-profile qantas",
-    "local:prefillGuest:dev": "serverless invoke local -f apiHandler -s dev --path ./samples/local-prefill-pnr-only-test.json --log --aws-profile qantas",
-    "deploy:dev": "serverless deploy -s dev --aws-profile qantas",
-    "deploy:dev:fast": "serverless deploy -s dev function -f apiHandler --aws-profile qantas",
-    "deploy:prod": "serverless deploy -s prod --aws-profile qantas",
-    "deploy:prod:fast": "serverless deploy -s prod function -f apiHandler --aws-profile qantas",
+    "deploy:dev": "serverless deploy -s dev --aws-profile hackday",
+    "deploy:dev:fast": "serverless deploy -s dev function -f apiHandler --aws-profile hackday",
+    "deploy:prod": "serverless deploy -s prod --aws-profile hackday",
+    "deploy:prod:fast": "serverless deploy -s prod function -f apiHandler --aws-profile hackday",
     "format": "prettier --write \"**/*.{js,json,yml}\"",
-    "lint": "eslint \"./index.js\" \"handlers/**/*.js\" \"modules/**/*.js\" \"services/**/*.js\" \"utils/**/*.js\" --quiet",
-    "ci:test": "npm run local:login:dev && npm run local:getLounges:dev",
-    "unit:test": "jest"
+    "lint": "eslint \"./index.js\" \"handlers/**/*.js\" \"modules/**/*.js\" \"services/**/*.js\" \"utils/**/*.js\" --quiet"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.463.0",
-    "axios": "^0.21.1",
+    "aws-sdk": "^2.804.0",
+    "axios": "^0.19.0",
+    "cors": "^2.8.5",
     "date-and-time": "^0.14.2",
     "dynamodb-doc": "^1.0.0",
     "express": "^4.17.1",
@@ -55,6 +47,8 @@
     "jest": "^24.8.0",
     "jest-when": "^2.6.0",
     "prettier": "^1.18.2",
-    "serverless-stage-manager": "^1.0.5"
+    "serverless-api-gateway-caching": "^1.7.2",
+    "serverless-stage-manager": "^1.0.5",
+    "db-migrate-pg-aurora": "^1.0.0"
   }
 }

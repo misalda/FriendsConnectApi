@@ -12,9 +12,6 @@ custom:
   apiCallLogging:
     dev: true
     prod: false
-  pnrCrypticWSDL:
-    dev: "./soap/dev/1ASIWKAGQF_PDT_20190613_072223.wsdl"
-    prod: "./soap/prod/1ASIWKAGQF_PRD_20190808_030229.wsdl"
   auroraClusterArn:
      Fn::Join:
        - ""
@@ -35,8 +32,8 @@ provider:
     restApi: true
   environment:
     DYNAMODB_TABLE: ${self:service.name}-ddb-loungeGuests-${opt:stage, self:provider.stage}
-    RDS_DB: "qladb"
-    RDS_USER: "qladbuser"
+    RDS_DB: "fcdb"
+    RDS_USER: "fcdbuser"
     AURORA_CLUSTER_ARN: "${self:custom.auroraClusterArn}"
     AURORA_CLUSTER_SECRET_ARN: ${self:custom.auroraClusterSecretArn}
   iamRoleStatements:
@@ -68,7 +65,6 @@ functions:
     handler: index.handler
     environment:
       API_CALL_LOGGING: ${self:custom.apiCallLogging.${self:provider.stage}}
-      PNR_CRYPTIC_WSDL: ${self:custom.pnrCrypticWSDL.${self:provider.stage}}
       APP_ENV: ${self:provider.stage}
 resources:
   Resources:
